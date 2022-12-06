@@ -116,7 +116,7 @@ def Select_the_Config(**args):
         print("创建中。。。。。")
         # print(f"\"{os.path.join(conf.get('qemu_env', 'Program_of_execution'),'qemu-img')}\" create -f {create_type[j['type']]} -o size={j['size']} {os.path.join(conf.get('qemu_env', 'Storage_location_of_the_VM'),name,name+'.'+j['type'])}")
         os.system(
-            f"\"\"{os.path.join(conf.get('qemu_env', 'Program_of_execution'), 'qemu-img')}\"\" create -f {create_type[j['type']]} -o size={j['size']} {os.path.join(conf.get('qemu_env', 'Storage_location_of_the_VM'), name, name + '.' + j['type'])}")
+            f"\"\"{os.path.join(conf.get('qemu_env', 'Program_of_execution'), 'qemu-img')}\"\" create -f {create_type[j['type']]} -o size={j['size']} {os.path.join(conf.get('qemu_env', 'Storage_location_of_the_VM'), name, name +f'{j}' + '.' + j['type'])}")
         print("创建成功。。。。。")
     time.sleep(0.7)
     main()
@@ -755,7 +755,7 @@ def delete_disk(conf: object, name: str, path: str, key: str):
 def add_disk(conf: object, name: str, path: str, info: dict, key: str, exec_path: str, Unused_sequence: int):
     create_type = {'qcow2': 'qcow2', 'img': 'raw', 'vmdk': 'vmdk', "vdi": "vdi", "qed": "qed"}
     conf.set(section=name, option=f"{key}",
-             value=f"{os.path.join(path, name, name + '.' + info['type'])}")
+             value=f"{os.path.join(path, name, name + f'{Unused_sequence}'+ '.' + info['type'])}")
     conf.set(section=name, option=f'{key}_type', value=info['type'])
     conf.set(section=name, option=f'{key}_size', value=info['size'])
     with open(os.path.join(path, f'{name}', f'{name}.conf'), "w+") as wtf:
