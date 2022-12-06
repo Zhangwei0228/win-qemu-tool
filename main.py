@@ -845,11 +845,11 @@ def start_VM_func(path: str):
                 len(re.findall('iso_path$|iso_path[1-99]', iso)) != 0]
     disk_command = ''
     for i in list_disk:
-        disk_command = disk_command + f"-drive file={conf.get(name, i)},media=disk,if=virtio"
+        disk_command = disk_command + f"-drive file={conf.get(name, i)},media=disk,if=virtio "
     iso_command = ''
     if len(iso_list) != 0:
         for j in iso_list:
-            iso_command = iso_command + f"-drive file={conf.get(name, j)},media=cdrom"
+            iso_command = iso_command + f"-drive file={conf.get(name, j)},media=cdrom "
     conf.read(confige_path)
     exec_path = conf.get('qemu_env', 'program_of_execution')
     # print(exec_path)
