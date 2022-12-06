@@ -853,7 +853,10 @@ def start_VM_func(path: str):
     conf.read(confige_path)
     exec_path = conf.get('qemu_env', 'program_of_execution')
     # print(exec_path)
-    start_command = f"\"{os.path.join(exec_path, exec_file)}\" -accel whpx -machine q35 -smp sockets={cpu_slot},cores={cpu_core},threads={cpu_thread} -m {memory} -usb -device usb-kbd -device usb-tablet -rtc base=localtime  {iso_command} {disk_command} -name {name} -boot {boot} {network_command}"
+    if get_os() == "win32":
+        start_command = f"\"{os.path.join(exec_path, exec_file)}\" -accel whpx -machine q35 -smp sockets={cpu_slot},cores={cpu_core},threads={cpu_thread} -m {memory} -usb -device usb-kbd -device usb-tablet -rtc base=localtime  {iso_command} {disk_command} -name {name} -boot {boot} {network_command}"
+    else:
+        start_command = f"\"{os.path.join(exec_path, exec_file)}\" -accel kvm -machine q35 -smp sockets={cpu_slot},cores={cpu_core},threads={cpu_thread} -m {memory} -usb -device usb-kbd -device usb-tablet -rtc base=localtime  {iso_command} {disk_command} -name {name} -boot {boot} {network_command}"
     print(start_command)
     os.popen(start_command)
 
