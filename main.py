@@ -148,7 +148,7 @@ def ask_file(ask_title: str, types):
     window = tk.Tk()
     window.title(ask_title)
     window.geometry('720x180')
-    tk.Label(window, text="文件夹路径：").place(x=50, y=50)
+    tk.Label(window, text="文件路径：").place(x=50, y=50)
     var_name = tk.StringVar()
     entry_name = tk.Entry(window, textvariable=var_name, width=55)
     entry_name.place(x=120, y=50)
