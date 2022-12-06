@@ -204,9 +204,9 @@ $$ |  $$ |$$   ____|$$ | $$ | $$ |$$ |  $$ |        $$ |$$\$$ |  $$ |$$ |  $$ |$
       $$ |                                                                                   
       \__|                                                                                 
 *************************************欢迎使用qemu小工具******************************************      
-###############################################################################################
-##                               注意虚拟机存放位置路径不能有中文                                  ##
-###############################################################################################
+#################################################################################################
+##                            注意虚拟机存放位置路径不能有中文                                 ##
+#################################################################################################
       '''
     return text
 
@@ -229,7 +229,7 @@ def Main_Screen():
     clear()
     print(banner())
     print("\n")
-    print('[1].创建虚拟机   [2].查看虚拟机信息   [3].修改虚拟机配置   [4].启动虚拟机   [5].退出程序')
+    print('[1].创建虚拟机  [2].查看虚拟机信息  [3].修改虚拟机配置  [4].启动虚拟机  [5].删除虚拟机  [6].退出程序')
     print("\n")
     operation_bool = True
     operation_count = 0
@@ -242,7 +242,7 @@ def Main_Screen():
             print(f"您输入了错误类型的数值 输入错误{operation_count}次")
             if operation_count >= 5:
                 break
-    if operation_bool is False and operation_num != 5:
+    if operation_bool is False and operation_num != 6:
         main_control(operation_num)
 
 
@@ -295,6 +295,10 @@ def create_VM():
             print('输入的类型不对')
             if select_architecture_count >= 5:
                 break
+    if select_architecture > len(architecture_list):
+        print("输入错误！！！！！")
+        time.sleep(0.6)
+        Main_Screen()
     architecture = architecture_list[select_architecture - 1]
     clear()
     print(banner())
@@ -409,22 +413,6 @@ def random_MAC():
     # drive = args['drive']  # 设备
 
 
-########################################################
-#                    主页控制器工具                       #
-########################################################
-def main_control(operation_num):
-    if operation_num == 1:
-        create_VM()
-    elif operation_num == 2:
-        show_vm_info()
-    elif operation_num == 3:
-        edit_VM_main()
-    elif operation_num == 4:
-        start_VM()
-    else:
-        pass
-
-
 def show_vm_info():
     clear()
     print(banner())
@@ -467,7 +455,7 @@ def show_vm_info():
         print(f"虚拟机内存 {conf.get(VM_list_conf[option_info - 1], 'memory')} ")
         print(f"网卡mac地址：{conf.get(VM_list_conf[option_info - 1], 'network_mac')}")
         disk_list = []
-        for i in conf.options('fedroa'):
+        for i in conf.options(VM_list_conf[option_info - 1]):
             a = re.findall(r'drive[1-99]_disk$', i)
             if len(a) != 0:
                 disk_list = disk_list + a
@@ -484,7 +472,7 @@ def show_vm_info():
         else:
             print("网络为： 用户网络")
         iso_list = []
-        for s in conf.options('fedroa'):
+        for s in conf.options(VM_list_conf[option_info - 1]):
             iso = re.findall(r'iso_path$|iso_path[1-99]', s)
             iso_list = iso_list + iso
         iso_count = 0
@@ -901,7 +889,7 @@ def start_VM():
         print("正在启动虚拟机.........")
         time.sleep(1.2)
         VM_path = conf.get(VM_list_conf[option_info - 1], 'path')
-        start_VM_porcess= multiprocessing.Process(target=start_VM_func,args=(VM_path,))
+        start_VM_porcess = multiprocessing.Process(target=start_VM_func, args=(VM_path,))
         start_VM_porcess.start()
         time.sleep(5)
         print("启动成功")
@@ -910,11 +898,91 @@ def start_VM():
         Main_Screen()
 
 
+def del_file(path):
+    ls = os.listdir(path)
+    for i in ls:
+        c_path = os.path.join(path, i)
+        if os.path.isdir(c_path):  # 如果是文件夹那么递归调用一下
+            del_file(c_path)
+        else:  # 如果是一个文件那么直接删除
+            os.remove(c_path)
+
+
+def delete_VM():
+    clear()
+    print(banner())
+    print("******************************************删除虚拟机*********************************************")
+    conf = configparser.ConfigParser()
+    conf.read(confige_path)
+    # print(conf.sections())
+    VM_list_conf = conf.sections().copy()[1:]
+    # print(VM_list_conf)
+    count = 0
+    if len(VM_list_conf) == 0:
+        print("你还没有创建虚拟机")
+    else:
+        for i in VM_list_conf:
+            count = count + 1
+            print(f"[{count}].{VM_list_conf[count - 1]}", end=" ")
+            if count % 5 == 0:
+                print("\n")
+            if count == len(VM_list_conf):
+                print("\n")
+    option_info = int(input("请输入对应虚拟机编号："))
+    if option_info <= 0:
+        print("输入错误！")
+        Main_Screen()
+    elif option_info > len(VM_list_conf):
+        print("输入错误！")
+        Main_Screen()
+    else:
+        name = VM_list_conf[option_info - 1]
+        VM_dir = os.path.join(conf.get('qemu_env', 'storage_location_of_the_vm'), name)
+        print(f"确认要删除 {name} 虚拟机吗 Y确认 N取消 (注意会删除：{VM_dir}下所有文件)")
+        option = input("请输入(Y/N):  ")
+        if option.lower() == "Y".lower():
+            conf.remove_section(name)
+            del_file(VM_dir)
+            os.rmdir(VM_dir)
+            with open(confige_path, 'w+') as f:
+                conf.write(f)
+            print("---------------------->成功(successful)")
+            time.sleep(1.0)
+            Main_Screen()
+        else:
+            print("---------------------->取消操作!(failed)")
+            time.sleep(1.0)
+            Main_Screen()
+
+
+########################################################
+#                    主页控制器工具                       #
+########################################################
+def main_control(operation_num):
+    if operation_num == 1:
+        create_VM()
+    elif operation_num == 2:
+        show_vm_info()
+    elif operation_num == 3:
+        edit_VM_main()
+    elif operation_num == 4:
+        start_VM()
+    elif operation_num == 5:
+        delete_VM()
+    else:
+        pass
+
+
 ##########################################################
 #                     结束启动VM函数                       #
 ##########################################################
 
 if __name__ == '__main__':
     # read_conf()
-    main()
+    try:
+        main()
+    except ValueError:
+        print("输入错误！！！！")
+        time.sleep(1.0)
+        Main_Screen()
     # show_vm_info()
